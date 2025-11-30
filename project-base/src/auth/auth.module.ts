@@ -8,6 +8,7 @@ import { UserModule } from "src/user/user.module";
 import { LocalStrategy } from "./Localstrategy";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PassportModule } from "@nestjs/passport";
+import { UserModule } from "src/user/user.module";
 
 @Module({
   imports: [

@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,80 +7,251 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Crianca {
-  id_crianca      BigInt   @id
-  id_responsavel  BigInt
-  nome            String
-  data_nascimento DateTime
-  rg              String
-  cpf             String   @unique
+model Usuario {
+  id_usuario    BigInt      @id
+  nome          String
+  email         String      @unique
+  senha         String
+  perfil        TipoUsuario // admin ou usuario
+  data_cadastro DateTime    @default(now())
+}
 
-  responsavel Responsavel  @relation(fields: [id_responsavel], references: [id_responsavel])
-  frequencias Frequencia[]
+model Familia {
+  id_familia            BigInt   @id
+  nome                  String // Nome da família
+  numero_dependentes    Int
+  id_responsavel        BigInt?  @unique
+  observacoes           String?
+  data_cadastro         DateTime @default(now())
+  elegivel_cesta_basica Boolean  @default(true)
+
+  responsavel Responsavel? @relation(fields: [id_responsavel], references: [id_responsavel])
+  pessoas     Pessoa[]
+  criancas    Crianca[]
+}
+
+model Pessoa {
+  id_pessoa          BigInt   @id
+  id_familia         BigInt
+  nome               String
+  data_nascimento    DateTime
+  rg                 String?
+  cpf                String?  @unique
+  foto_url           String?
+  observacoes        String? // Para anotações gerais
+  matriculada_escola Boolean  @default(false)
+  nome_escola        String?
+
+  familia    Familia              @relation(fields: [id_familia], references: [id_familia])
+  matriculas MatriculaAtividade[]
+}
+
+model Crianca {
+  id_crianca         BigInt   @id
+  id_familia         BigInt
+  nome               String
+  data_nascimento    DateTime
+  rg                 String?
+  cpf                String?  @unique
+  foto_url           String?
+  observacoes        String?
+  matriculada_escola Boolean  @default(false)
+  nome_escola        String?
+
+  familia    Familia              @relation(fields: [id_familia], references: [id_familia])
+  matriculas MatriculaAtividade[]
 }
 
 model Responsavel {
-  id_responsavel         BigInt @id
-  nome                   String
-  cpf                    String @unique
-  rg                     String
-  parentesco_com_crianca String
-  telefone               String
-  email                  String
-  ocupacao               String
-  endereco               String
+  id_responsavel  BigInt   @id
+  nome            String
+  cpf             String   @unique
+  rg              String
+  data_nascimento DateTime
+  telefone        String
+  email           String?
+  ocupacao        String?
+  endereco        String
+  foto_url        String?
 
-  criancas      Crianca[]
-  cestasBasicas CestaBasica[]
+  familia            Familia?
+  cestasBeneficiario CestaBasica[] @relation("beneficiario")
+}
+
+model BeneficiarioExterno {
+  id_beneficiario BigInt  @id
+  nome            String
+  telefone        String?
+  endereco        String?
+  origem          String // Ex: "Igreja"
+  observacoes     String?
+
+  cestasBeneficiario CestaBasica[]
 }
 
 model Voluntario {
-  id_voluntario          BigInt  @id
+  id_voluntario          BigInt   @id
   nome                   String
-  cpf                    String  @unique
+  cpf                    String   @unique
+  rg                     String
+  endereco               String
   email                  String
   telefone               String
   disponibilidade        String
   area_atuacao           String
-  respondeu_questionario Boolean
-  aceitou_termos         Boolean
+  tem_antecedentes       Boolean  @default(false)
+  url_comprovante        String? // URL do comprovante de antecedentes criminais
+  respondeu_questionario Boolean  @default(false)
+  aceitou_termos         Boolean  @default(false)
+  data_cadastro          DateTime @default(now())
+
+  atividades_realizadas AtividadeVoluntario[]
+}
+
+model AtividadeVoluntario {
+  id_atividade      BigInt   @id
+  id_voluntario     BigInt
+  descricao         String
+  data_realizacao   DateTime
+  horas_trabalhadas Float
+  observacoes       String?
+
+  voluntario Voluntario @relation(fields: [id_voluntario], references: [id_voluntario])
 }
 
 model Parceiro {
-  id_parceiro  BigInt @id
-  nome         String
-  tipo         String // "parceiro" ou "patrocinador"
-  email        String
-  telefone     String
-  contribuicao String // "financeira", "material", etc.
+  id_parceiro   BigInt     @id
+  nome          String
+  tipo_pessoa   TipoPessoa // Física ou Jurídica
+  documento     String? // CPF ou CNPJ
+  email         String?
+  telefone      String?
+  endereco      String?
+  data_cadastro DateTime   @default(now())
+
+  doacoes           Doacao[]
+  servicosPrestados ServicoPrestado[]
 }
 
-model Usuario {
-  id_usuario BigInt      @id
-  nome       String
-  email      String      @unique
-  senha      String
-  perfil     TipoUsuario // "admin" ou "usuario"
+model ServicoPrestado {
+  id_servico  BigInt    @id
+  id_parceiro BigInt
+  descricao   String
+  data_inicio DateTime
+  data_fim    DateTime?
+  observacoes String?
+
+  parceiro Parceiro @relation(fields: [id_parceiro], references: [id_parceiro])
+}
+
+model Doacao {
+  id_doacao        BigInt     @id
+  id_parceiro      BigInt? // Null se for anônima
+  tipo             TipoDoacao // Monetária ou Material
+  valor            Decimal? // Se for monetária
+  descricao        String
+  data_recebimento DateTime   @default(now())
+  comprovante_url  String? // URL do comprovante (ex: comprovante PIX)
+  is_anonima       Boolean    @default(false)
+
+  parceiro       Parceiro?     @relation(fields: [id_parceiro], references: [id_parceiro])
+  itens_doados   ItemDoado[]
+  cestas_geradas CestaBasica[]
+}
+
+model ItemDoado {
+  id_item        BigInt  @id
+  id_doacao      BigInt
+  nome           String
+  quantidade     Int
+  unidade_medida String? // kg, unidade, etc.
+
+  doacao Doacao @relation(fields: [id_doacao], references: [id_doacao])
+}
+
+model Produto {
+  id_produto     BigInt  @id
+  nome           String
+  descricao      String?
+  is_basico      Boolean @default(true) // Se é um item básico que sempre está presente
+  unidade_medida String? // kg, unidade, etc.
+
+  produtos_cesta ProdutoCesta[]
+}
+
+model CestaBasica {
+  id_cesta        BigInt   @id
+  id_responsavel  BigInt?
+  id_beneficiario BigInt?
+  id_doacao       BigInt? // Origem da cesta
+  data_entrega    DateTime
+  observacoes     String?
+
+  responsavel          Responsavel?         @relation("beneficiario", fields: [id_responsavel], references: [id_responsavel])
+  beneficiario_externo BeneficiarioExterno? @relation(fields: [id_beneficiario], references: [id_beneficiario])
+  doacao_origem        Doacao?              @relation(fields: [id_doacao], references: [id_doacao])
+  produtos             ProdutoCesta[]
+}
+
+model ProdutoCesta {
+  id_produto_cesta BigInt @id
+  id_cesta         BigInt
+  id_produto       BigInt
+  quantidade       Int
+
+  cesta   CestaBasica @relation(fields: [id_cesta], references: [id_cesta])
+  produto Produto     @relation(fields: [id_produto], references: [id_produto])
+}
+
+model Atividade {
+  id_atividade   BigInt        @id
+  nome           String
+  descricao      String?
+  tipo           TipoAtividade
+  publico_alvo   String // Crianças, adultos, familiares, etc.
+  dias_semana    String // Ex: "1,3,5" para segunda, quarta e sexta
+  horario_inicio DateTime
+  horario_fim    DateTime
+
+  materias   Materia[]
+  matriculas MatriculaAtividade[]
+}
+
+model Materia {
+  id_materia   BigInt  @id
+  id_atividade BigInt
+  nome         String // Ex: "Português", "Matemática"
+  descricao    String?
+
+  atividade Atividade @relation(fields: [id_atividade], references: [id_atividade])
+}
+
+model MatriculaAtividade {
+  id_matricula   BigInt          @id
+  id_pessoa      BigInt?
+  id_crianca     BigInt?
+  id_atividade   BigInt
+  data_matricula DateTime        @default(now())
+  status         StatusMatricula @default(ATIVA)
+  observacoes    String?
+
+  pessoa      Pessoa?      @relation(fields: [id_pessoa], references: [id_pessoa])
+  atividade   Atividade    @relation(fields: [id_atividade], references: [id_atividade])
+  frequencias Frequencia[]
+  crianca     Crianca?     @relation(fields: [id_crianca], references: [id_crianca])
+
+  @@unique([id_pessoa, id_atividade])
+  @@unique([id_crianca, id_atividade])
 }
 
 model Frequencia {
   id_frequencia BigInt   @id
-  id_crianca    BigInt
-  atividade     String
+  id_matricula  BigInt
   data          DateTime
   presenca      Boolean
+  justificativa String?
 
-  crianca Crianca @relation(fields: [id_crianca], references: [id_crianca])
-}
-
-model CestaBasica {
-  id_cesta       BigInt   @id
-  id_responsavel BigInt
-  data_entrega   DateTime
-  quantidade     Int
-  observacoes    String
-
-  responsavel Responsavel @relation(fields: [id_responsavel], references: [id_responsavel])
+  matricula MatriculaAtividade @relation(fields: [id_matricula], references: [id_matricula])
 }
 
 enum TipoUsuario {

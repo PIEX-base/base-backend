@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Request,
-  Get
-} from "@nestjs/common";
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Request, Get } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { LocalAuthGuard } from "./local-auth.guard";
@@ -15,9 +6,9 @@ import { JwtAuthGuard } from "./dto/jwt-auth.guard";
 import { RolesGuard } from "./roles.guard";
 import { Roles, UserRole } from "./roles.decorator";
 // Controller responsável pelas rotas de autenticação
-@Controller("auth")// Define o prefixo da rota como /auth
+@Controller("auth") // Define o prefixo da rota como /auth
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   // Endpoint de login protegido pelo LocalAuthGuard (validação das credenciais)
   @HttpCode(HttpStatus.OK)
@@ -33,8 +24,8 @@ export class AuthController {
         id: req.user.id_usuario,
         email: req.user.email,
         perfil: req.user.perfil,
-        nome: req.user.nome
-      }
+        nome: req.user.nome,
+      },
     };
   }
 
@@ -46,7 +37,7 @@ export class AuthController {
       id_usuario: req.user.id_usuario,
       email: req.user.email,
       perfil: req.user.perfil,
-      nome: req.user.nome
+      nome: req.user.nome,
     };
   }
 
@@ -58,7 +49,7 @@ export class AuthController {
     return {
       message: "Acesso ao painel administrativo da ONG",
       user: req.user,
-      permissions: ['manage_children', 'manage_volunteers', 'manage_reports'] // Permissões de administração
+      permissions: ["manage_children", "manage_volunteers", "manage_reports"], // Permissões de administração
     };
   }
 
@@ -70,7 +61,7 @@ export class AuthController {
     return {
       message: "Acesso ao painel de coordenação",
       user: req.user,
-      permissions: ['view_children', 'manage_activities', 'view_reports'] // Permissões de coordenação
+      permissions: ["view_children", "manage_activities", "view_reports"], // Permissões de coordenação
     };
   }
 
@@ -82,7 +73,7 @@ export class AuthController {
     return {
       message: "Área do voluntário",
       user: req.user,
-      permissions: ['view_assigned_children', 'mark_attendance'] // Permissões dos voluntários
+      permissions: ["view_assigned_children", "mark_attendance"], // Permissões dos voluntários
     };
   }
 
@@ -94,10 +85,10 @@ export class AuthController {
     return {
       message: "Área da família",
       user: req.user,
-      permissions: ['view_children_progress', 'update_family_info'] // Permissões familiares
+      permissions: ["view_children_progress", "update_family_info"], // Permissões familiares
     };
   }
-  
+
   // Endpoint para logout autenticado
   @Post("logout")
   @UseGuards(JwtAuthGuard)

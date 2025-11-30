@@ -237,4 +237,44 @@ export class VoluntarioController {
 
     return this.voluntarioService.getRelatorioVoluntariosAtividades(filtros);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(":id")
+  @ApiOperation({ summary: "Obter um voluntário pelo ID" })
+  @ApiParam({ name: "id", description: "ID do voluntário" })
+  @ApiResponse({
+    status: 200,
+    description: "Voluntário encontrado",
+    type: VoluntarioEntity,
+  })
+  @ApiResponse({ status: 404, description: "Voluntário não encontrado" })
+  async findOne(@Param("id") id: string) {
+    return this.voluntarioService.findOne(BigInt(id));
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(":id")
+  @ApiOperation({ summary: "Atualizar um voluntário" })
+  @ApiParam({ name: "id", description: "ID do voluntário" })
+  @ApiResponse({
+    status: 200,
+    description: "Voluntário atualizado com sucesso",
+    type: VoluntarioEntity,
+  })
+  @ApiResponse({ status: 404, description: "Voluntário não encontrado" })
+  @ApiResponse({ status: 400, description: "Dados inválidos" })
+  async update(@Param("id") id: string, @Body() updateVoluntarioDto: UpdateVoluntarioDto) {
+    return this.voluntarioService.update(BigInt(id), updateVoluntarioDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Remover um voluntário" })
+  @ApiParam({ name: "id", description: "ID do voluntário" })
+  @ApiResponse({ status: 204, description: "Voluntário removido com sucesso" })
+  @ApiResponse({ status: 404, description: "Voluntário não encontrado" })
+  async remove(@Param("id") id: string) {
+    await this.voluntarioService.remove(BigInt(id));
+  }
 }

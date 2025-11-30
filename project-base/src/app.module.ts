@@ -8,9 +8,7 @@ import { UserModule } from "./user/user.module";
 import { CriancaModule } from "./crianca/crianca.module";
 import { ResponsavelModule } from "./responsavel/responsavel.module";
 import { VoluntarioModule } from "./voluntario/voluntario.module";
-import { ParceiroModule } from "./parceiro/parceiro.module";
-import { CestaBasicaModule } from "./cesta-basica/cestabasica.module";
-import { FrequenciaModule } from "./frequencia/frequencia.module";
+import { FamiliaModule } from "./familia/familia.module";
 import { AuthModule } from "./auth/auth.module";
 import { AuditMiddleware } from "./auth/auditMiddleware";
 import { PessoaModule } from "./pessoa/pessoa.module";
@@ -32,7 +30,18 @@ import { AtividadeVoluntarioModule } from "./atividade-voluntario/atividade-volu
     CriancaModule,
     ResponsavelModule,
     VoluntarioModule,
+    FamiliaModule,
+    PessoaModule,
+    BeneficiarioExternoModule,
     ParceiroModule,
+    DoacaoModule,
+    ItemDoadoModule,
+    AtividadeVoluntarioModule,
+    ServicoPrestadoModule,
+    ProdutoModule,
+    ProdutoCestaModule,
+    AtividadeModule,
+    MateriaModule,
     CestaBasicaModule,
     FrequenciaModule,
     DoacaoModule,

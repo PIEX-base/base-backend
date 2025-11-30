@@ -11,7 +11,10 @@ export class FrequenciaRepository {
   async findAll(): Promise<FrequenciaEntity[]> {
     return this.prisma.frequencia.findMany({
       include: {
-        crianca: true,
+        matricula: true,
+      },
+      orderBy: {
+        data: "desc",
       },
     });
   }
@@ -20,7 +23,7 @@ export class FrequenciaRepository {
     const frequencia = await this.prisma.frequencia.findUnique({
       where: { id_frequencia: id },
       include: {
-        crianca: true,
+        matricula: true,
       },
     });
 
@@ -34,6 +37,9 @@ export class FrequenciaRepository {
   async create(frequenciaData: Prisma.FrequenciaCreateInput): Promise<FrequenciaEntity> {
     return this.prisma.frequencia.create({
       data: frequenciaData,
+      include: {
+        matricula: true,
+      },
     });
   }
 
@@ -45,7 +51,7 @@ export class FrequenciaRepository {
       where: { id_frequencia: id },
       data: updateFrequenciaDto,
       include: {
-        crianca: true,
+        matricula: true,
       },
     });
   }
@@ -59,19 +65,75 @@ export class FrequenciaRepository {
     });
   }
 
-  async findByChildId(id_crianca: bigint): Promise<FrequenciaEntity[]> {
-    const criancaExiste = await this.prisma.crianca.findUnique({
-      where: { id_crianca },
+  async findByPessoa(id_pessoa: bigint): Promise<FrequenciaEntity[]> {
+    const pessoaExiste = await this.prisma.pessoa.findUnique({
+      where: { id_pessoa },
     });
 
-    if (!criancaExiste) {
-      throw new NotFoundException(`Criança com ID ${id_crianca} não encontrada`);
+    if (!pessoaExiste) {
+      throw new NotFoundException(`Pessoa com ID ${id_pessoa} não encontrada`);
     }
 
     return this.prisma.frequencia.findMany({
-      where: { id_crianca },
+      where: {
+        matricula: {
+          id_pessoa: id_pessoa,
+        },
+      },
       include: {
-        crianca: true,
+        matricula: true,
+      },
+      orderBy: {
+        data: "desc",
+      },
+    });
+  }
+
+  async findByAtividade(id_atividade: bigint): Promise<FrequenciaEntity[]> {
+    const atividadeExiste = await this.prisma.atividade.findUnique({
+      where: { id_atividade },
+    });
+
+    if (!atividadeExiste) {
+      throw new NotFoundException(`Atividade com ID ${id_atividade} não encontrada`);
+    }
+
+    return this.prisma.frequencia.findMany({
+      where: { matricula: { id_atividade } },
+      include: {
+        matricula: true,
+      },
+      orderBy: {
+        data: "desc",
+      },
+    });
+  }
+
+  async findByPeriodo(dataInicio: Date, dataFim: Date): Promise<FrequenciaEntity[]> {
+    return this.prisma.frequencia.findMany({
+      where: {
+        data: {
+          gte: dataInicio,
+          lte: dataFim,
+        },
+      },
+      include: {
+        matricula: true,
+      },
+      orderBy: {
+        data: "desc",
+      },
+    });
+  }
+
+  async findByPresenca(presenca: boolean): Promise<FrequenciaEntity[]> {
+    return this.prisma.frequencia.findMany({
+      where: { presenca },
+      include: {
+        matricula: true,
+      },
+      orderBy: {
+        data: "desc",
       },
     });
   }

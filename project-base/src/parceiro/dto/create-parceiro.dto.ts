@@ -1,5 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { TipoPessoa } from "@prisma/client";
 
 export class CreateParceiroDto {
   @ApiProperty({
@@ -11,34 +12,47 @@ export class CreateParceiroDto {
   nome: string;
 
   @ApiProperty({
-    description: "Tipo de parceria",
-    example: "patrocinador",
+    description: "Tipo de pessoa (física ou jurídica)",
+    example: "juridica",
+    enum: TipoPessoa,
   })
-  @IsString()
+  @IsEnum(TipoPessoa)
   @IsNotEmpty()
-  tipo: string;
+  tipo_pessoa: TipoPessoa;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    description: "Documento (CPF ou CNPJ)",
+    example: "12.345.678/0001-90",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  documento?: string;
+
+  @ApiPropertyOptional({
     description: "Email do parceiro",
     example: "contato@empresaxyz.com",
+    required: false,
   })
+  @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  email?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: "Telefone de contato",
     example: "(11) 98765-4321",
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  telefone: string;
+  telefone?: string;
 
-  @ApiProperty({
-    description: "Tipo de contribuição",
-    example: "financeira",
+  @ApiPropertyOptional({
+    description: "Endereço do parceiro",
+    example: "Rua das Empresas, 123 - São Paulo/SP",
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  contribuicao: string;
+  endereco?: string;
 }
